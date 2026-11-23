@@ -96,6 +96,7 @@
     <div class="turmas" id="turmas"></div>
     <button class="main" id="btn-iniciar">Iniciar quiz</button>
     <div class="err" id="err-id"></div>
+    <div class="lib hidden" id="id-lib"></div>
   </section>
 
   <!-- 2. Questões (uma por vez, com tempo) -->
@@ -197,6 +198,7 @@
   }).catch(function(e){ $('carregando').textContent = 'Não foi possível carregar o quiz: ' + e; });
 
   function montarIdentificacao(){
+    $('id-lib').classList.add('hidden');
     var q = quiz;
     $('turmas').innerHTML = q.turmas.map(function(t){
       return '<label class="turma"><input type="radio" name="turma" value="'+esc(t)+'"><span>'+esc(t)+'</span></label>';
@@ -220,6 +222,17 @@
     if (nome.split(' ').length < 2 || nome.length < 5) return $('err-id').textContent = 'Digite seu nome completo (nome e sobrenome).';
     if (!t) return $('err-id').textContent = 'Selecione seu turno: Matutino ou Noturno.';
     $('err-id').textContent = '';
+    var btn = this;
+    if (!btn.dataset.ok) {
+      btn.disabled = true; $('err-id').textContent = 'Verificando…';
+      fetch(API_URL + '?acao=checar&nome=' + encodeURIComponent(nome) + '&turma=' + encodeURIComponent(t.value) + '&cod=' + encodeURIComponent(codigoLib)).then(function(r){ return r.json(); }).then(function(d){
+        btn.disabled = false; $('err-id').textContent = '';
+        if (!d.ok){ $('err-id').textContent = d.erro || 'Você já realizou este quiz.'; if (d.precisaCodigo) montarLiberacao('id-lib', 1); return; }
+        btn.dataset.ok = '1'; btn.click();
+      }).catch(function(){ btn.disabled = false; $('err-id').textContent = 'Sem conexão para verificar. Tente novamente.'; });
+      return;
+    }
+    delete btn.dataset.ok;
     aluno = { nome: nome, turma: t.value, tentativa: tentativaAtual(), codigo: codigoLib, envioId: Date.now().toString(36) + Math.random().toString(36).slice(2) };
     try { localStorage.setItem('quizOlho_id', JSON.stringify({nome:nome})); } catch(e){}
     $('q-nome').textContent = nome; $('q-turma').textContent = t.value;
