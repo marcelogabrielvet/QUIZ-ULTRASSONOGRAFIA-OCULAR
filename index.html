@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Ultrassonografia do Olho · Diagnóstico por Imagem</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#21315F; --navy-2:#2E4380; --red:#C8202F; --ink:#14182A; --muted:#5B6275;
+    --line:#DDE1EA; --soft:#F3F5F9; --bg:#E9ECF3; --ok:#1E7A4C; --ok-bg:#E5F4EC; --bad:#B42318; --bad-bg:#FDECEA;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  header{background:var(--navy);color:#fff;padding:28px 16px 64px;text-align:center}
+  header .chev{color:var(--red);letter-spacing:2px;font-weight:700;font-size:14px}
+  header h1{font:800 clamp(26px,6vw,40px)/1.1 Poppins,sans-serif;margin:6px 0 6px}
+  header p{margin:0;opacity:.85;font-size:15px}
+  main{max-width:720px;margin:-44px auto 40px;padding:0 16px}
+  .card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 6px 24px rgba(33,49,95,.10);margin-bottom:16px}
+  h2{font:700 20px/1.3 Poppins,sans-serif;margin:0 0 4px;color:var(--navy)}
+  .hint{color:var(--muted);font-size:14px;margin:0 0 18px}
+  label.f{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+  input[type=text]{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;font:inherit;background:#fff}
+  input[type=text]:focus{outline:none;border-color:var(--navy-2);box-shadow:0 0 0 3px rgba(46,67,128,.15)}
+  .turmas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .turma{position:relative}
+  .turma input{position:absolute;opacity:0}
+  .turma span{display:block;text-align:center;padding:13px;border:1.5px solid var(--line);border-radius:12px;font-weight:600;cursor:pointer;transition:.15s}
+  .turma input:checked + span{border-color:var(--navy);background:var(--navy);color:#fff}
+  .turma input:focus-visible + span{box-shadow:0 0 0 3px rgba(46,67,128,.3)}
+  button.main{width:100%;margin-top:22px;padding:15px;border:0;border-radius:12px;background:var(--red);color:#fff;font:700 16px Poppins,sans-serif;cursor:pointer}
+  button.main:disabled{opacity:.55;cursor:not-allowed}
+  .err{color:var(--bad);font-size:14px;margin-top:10px;min-height:1em}
+  .who{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-bottom:12px}
+  .who b{color:var(--ink)}
+  .progress{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:16px}
+  .progress i{display:block;height:100%;width:0;background:var(--red);transition:width .25s}
+  .sec{font:700 13px Poppins,sans-serif;text-transform:uppercase;letter-spacing:1.5px;color:var(--red);margin:26px 4px 10px}
+  .q .num{font:700 13px Poppins,sans-serif;color:var(--muted)}
+  .q p.en{font-weight:600;margin:4px 0 14px}
+  .opt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:.12s}
+  .opt:hover{background:var(--soft)}
+  .opt input{position:absolute;opacity:0}
+  .opt .l{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--muted)}
+  .opt.sel{border-color:var(--navy);background:#EEF1F8}
+  .opt.sel .l{background:var(--navy);border-color:var(--navy);color:#fff}
+  .timer{display:flex;align-items:center;gap:12px;margin-top:4px}
+  .timer .t{font:800 26px/1 Poppins,sans-serif;color:var(--navy);min-width:64px;font-variant-numeric:tabular-nums}
+  .timer .tb{flex:1;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+  .timer .tb i{display:block;height:100%;width:100%;background:var(--navy);transition:width .25s linear}
+  .timer.warn .t{color:var(--bad)} .timer.warn .tb i{background:var(--bad)}
+  .tag{display:inline-block;font:700 12px Poppins,sans-serif;text-transform:uppercase;letter-spacing:1.2px;color:var(--red);margin-bottom:6px}
+  .rules{background:var(--soft);border-radius:12px;padding:12px 14px;font-size:14px;margin:0 0 6px}
+  .rules li{margin:2px 0}
+  .res .b.nb{background:var(--soft);color:var(--muted)}
+  .score{text-align:center}
+  .score .big{font:800 64px/1 Poppins,sans-serif;color:var(--navy);margin:10px 0 2px}
+  .score .big small{font-size:24px;color:var(--muted)}
+  .pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0 4px}
+  .pill{background:var(--soft);border-radius:99px;padding:6px 14px;font-size:14px}
+  .saved{display:inline-block;margin-top:14px;background:var(--ok-bg);color:var(--ok);font-weight:600;padding:8px 14px;border-radius:10px;font-size:14px}
+  .res{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+  .res .b{flex:none;font-weight:700;border-radius:8px;padding:2px 8px;font-size:12px}
+  .res .b.ok{background:var(--ok-bg);color:var(--ok)} .res .b.no{background:var(--bad-bg);color:var(--bad)}
+  .res .g{color:var(--muted);display:block;margin-top:2px}
+  .center{text-align:center;color:var(--muted)}
+  .hidden{display:none}
+  .lib{margin-top:22px;font-size:13px;color:var(--muted)}
+  .lib a{color:var(--muted);text-decoration:underline;cursor:pointer}
+  .lib .row{display:flex;gap:8px;margin-top:10px}
+  .lib input{flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;text-transform:uppercase}
+  .lib button{padding:10px 16px;border:0;border-radius:10px;background:var(--navy);color:#fff;font:600 14px Poppins,sans-serif;cursor:pointer}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding-bottom:30px}
+</style>
+</head>
+<body>
+<header>
+  <div class="chev">›››››</div>
+  <h1 id="titulo">Diagnóstico por Imagem</h1>
+  <p id="subtitulo">Ultrassonografia do Olho · Quiz pós-aula</p>
+</header>
+
+<main>
+  <div id="carregando" class="card center">Carregando o quiz…</div>
+
+  <!-- 1. Identificação -->
+  <section id="tela-id" class="card hidden">
+    <h2>Identificação</h2>
+    <p class="hint">Preencha seus dados antes de começar. Eles serão usados para lançar sua nota.</p>
+    <ul class="rules" id="regras"></ul>
+    <label class="f" for="nome">Nome completo</label>
+    <input type="text" id="nome" autocomplete="name" placeholder="Ex.: Maria Fernanda Souza Lima">
+    <label class="f">Turno</label>
+    <div class="turmas" id="turmas"></div>
+    <button class="main" id="btn-iniciar">Iniciar quiz</button>
+    <div class="err" id="err-id"></div>
+  </section>
+
+  <!-- 2. Questões (uma por vez, com tempo) -->
+  <section id="tela-quiz" class="hidden">
+    <div class="card" style="padding:16px 20px">
+      <div class="who"><span>Aluno(a): <b id="q-nome"></b></span><span>Turno: <b id="q-turma"></b></span></div>
+      <div class="progress"><i id="barra"></i></div>
+      <div class="timer" id="timer"><span class="t" id="t-num">40s</span><div class="tb"><i id="t-bar"></i></div></div>
+    </div>
+    <div class="card q" id="questao"></div>
+    <div class="card" id="nav">
+      <button class="main" id="btn-prox" style="margin-top:0">Próxima questão</button>
+      <div class="err" id="err-quiz"></div>
+    </div>
+  </section>
+
+  <!-- 3. Resultado -->
+  <section id="tela-res" class="hidden">
+    <div class="card score">
+      <h2>Quiz enviado!</h2>
+      <div class="hint" id="r-quem"></div>
+      <div class="err hidden" id="r-aviso" style="background:var(--bad-bg);border-radius:10px;padding:10px 12px;margin:8px 0"></div>
+      <div class="big" id="r-nota"></div>
+      <div class="hint" id="r-acertos"></div>
+      <div class="saved">✓ Nota registrada para o professor</div>
+      <div class="lib hidden" id="r-lib"></div>
+    </div>
+  </section>
+
+  <section id="tela-fechado" class="card center hidden">
+    <h2>Quiz encerrado</h2>
+    <p>O prazo para responder este quiz terminou. Em caso de dúvida, procure o professor.</p>
+  </section>
+
+  <section id="tela-bloqueado" class="card center hidden">
+    <h2>Acesso encerrado</h2>
+    <p id="b-msg">Você já realizou este quiz neste aparelho.</p>
+    <div class="big" id="b-nota" style="font:800 48px/1 Poppins,sans-serif;color:var(--navy);margin:14px 0 4px"></div>
+    <div class="lib hidden" id="b-lib"></div>
+  </section>
+</main>
+<footer>UNINASSAU · Diagnóstico por Imagem · M.V. Pós-Grad. Marcelo Gabriel</footer>
+
+<script>
+(function(){
+  var quiz = null, respostas = {}, aluno = {};
+  var LETRAS = ['A','B','C','D','E'];
+  var $ = function(id){ return document.getElementById(id); };
+  function show(id){
+    ['carregando','tela-id','tela-quiz','tela-res','tela-fechado','tela-bloqueado'].forEach(function(s){ $(s).classList.toggle('hidden', s !== id); });
+    window.scrollTo(0,0);
+  }
+  function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+  // ============ CONFIGURAÇÃO ============
+  // Cole entre as aspas o link do App da Web do Google Apps Script (termina em /exec)
+  var API_URL = 'https://script.google.com/macros/s/AKfycbwMjmBRs1Y4S-DOBLUpZw-aGGBJh7PCkaGYmJL_B6c_DJ0ad8G825PSEtY86P_Jn49z/exec';
+  // =====================================
+
+  function server(fn, arg){
+    if (window.google && google.script && google.script.run){
+      return new Promise(function(ok, fail){
+        google.script.run.withSuccessHandler(ok).withFailureHandler(function(e){ fail(e && e.message || String(e)); })[fn](arg);
+      });
+    }
+    if (window.MOCK) return new Promise(function(ok, fail){ try { ok(window.MOCK[fn](arg)); } catch(e){ fail(e.message); } });
+    if (API_URL.indexOf('/exec') === -1) return Promise.reject('o link do Apps Script ainda não foi configurado.');
+    if (fn === 'obterQuiz'){
+      return fetch(API_URL + '?acao=quiz').then(function(r){ return r.json(); });
+    }
+    return fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(arg), keepalive: true })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (!d.ok) throw (d.erro || 'erro desconhecido'); return d.resultado; });
+  }
+
+  server('obterQuiz').then(function(q){
+    quiz = q;
+    $('titulo').textContent = 'Diagnóstico por Imagem';
+    $('subtitulo').textContent = q.subtitulo;
+    if (!q.aberto) return show('tela-fechado');
+    var prog = null; try { prog = JSON.parse(localStorage.getItem(KEY)||'null'); } catch(e){}
+    if (prog && prog.aluno && prog.aluno.nome){
+      // Retoma de onde parou (recarregar a página não reinicia o tempo)
+      aluno = prog.aluno; respostas = prog.respostas || {}; idx = prog.idx || 0; deadline = prog.deadline || 0; motivoSaida = prog.motivo || '';
+      while (deadline && Date.now() >= deadline && idx < q.questoes.length){ idx++; deadline = 0; }
+      if (motivoSaida || idx >= q.questoes.length){ $('q-nome').textContent = aluno.nome; $('q-turma').textContent = aluno.turma; show('tela-quiz'); return enviar(); }
+      return abrirQuiz();
+    }
+    var feito = lerFeito();
+    if (feito){
+      var usadas = feito.tentativas || 1;
+      $('b-nota').textContent = feito.nota != null ? fmt(feito.nota) + ' / ' + fmt(feito.max) : '';
+      if (feito.saiu) $('b-msg').textContent = 'Você saiu da página durante o quiz e a tentativa foi encerrada. Suas respostas até aquele momento foram registradas.';
+      else $('b-msg').textContent = 'Você já realizou este quiz neste aparelho. Sua resposta foi registrada.';
+      montarLiberacao('b-lib', usadas);
+      return show('tela-bloqueado');
+    }
+    montarIdentificacao();
+  }).catch(function(e){ $('carregando').textContent = 'Não foi possível carregar o quiz: ' + e; });
+
+  function montarIdentificacao(){
+    var q = quiz;
+    $('turmas').innerHTML = q.turmas.map(function(t){
+      return '<label class="turma"><input type="radio" name="turma" value="'+esc(t)+'"><span>'+esc(t)+'</span></label>';
+    }).join('');
+    $('regras').innerHTML =
+      '<li>São <b>'+q.questoes.length+' questões</b> de múltipla escolha; cada uma vale <b>'+fmt(q.notaMaxima/q.questoes.length)+'</b> (total '+fmt(q.notaMaxima)+' ponto).</li>'+
+      '<li>Você terá <b>'+q.tempo+' segundos por questão</b>. Ao acabar o tempo, a próxima abre sozinha.</li>'+
+      '<li>Não é possível voltar a uma questão anterior. Questão sem resposta conta como errada.</li>'+
+      '<li><b>Não saia desta página</b> (trocar de aba, abrir outro aplicativo, minimizar ou recarregar). Se sair, a tentativa é <b>finalizada na hora</b> e enviada com as respostas dadas até ali.</li>'+
+      (tentativaAtual() > 1 ? '<li><b>Tentativa liberada pelo professor.</b></li>' : '');
+    try { var s = JSON.parse(localStorage.getItem('quizOlho_id')||'{}'); if (s.nome) $('nome').value = s.nome; } catch(e){}
+    var f = lerFeito();
+    if (f && f.turma){ var r = document.querySelector('input[name=turma][value="'+f.turma+'"]'); if (r) r.checked = true; }
+    $('btn-iniciar').textContent = tentativaAtual() > 1 ? 'Iniciar 2ª tentativa' : 'Iniciar quiz';
+    show('tela-id');
+  }
+
+  $('btn-iniciar').onclick = function(){
+    var nome = $('nome').value.replace(/\s+/g,' ').trim();
+    var t = document.querySelector('input[name=turma]:checked');
+    if (nome.split(' ').length < 2 || nome.length < 5) return $('err-id').textContent = 'Digite seu nome completo (nome e sobrenome).';
+    if (!t) return $('err-id').textContent = 'Selecione seu turno: Matutino ou Noturno.';
+    $('err-id').textContent = '';
+    aluno = { nome: nome, turma: t.value, tentativa: tentativaAtual(), codigo: codigoLib, envioId: Date.now().toString(36) + Math.random().toString(36).slice(2) };
+    try { localStorage.setItem('quizOlho_id', JSON.stringify({nome:nome})); } catch(e){}
+    $('q-nome').textContent = nome; $('q-turma').textContent = t.value;
+    iniciar();
+  };
+
+  // ---------- Fluxo com tempo por questão ----------
+  var MAX_TENT = 2;
+  function lerFeito(){ try { return JSON.parse(localStorage.getItem(DONE)||'null'); } catch(e){ return null; } }
+  function tentativaAtual(){ var f = lerFeito(); return f ? (f.tentativas || 1) + 1 : 1; }
+  var codigoLib = '';
+  // Liberação discreta: aparece só como "problema técnico" e exige o código do professor
+  function montarLiberacao(alvo, usadas){
+    var el = $(alvo);
+    if (usadas >= MAX_TENT){ el.classList.add('hidden'); el.innerHTML = ''; return; }
+    el.innerHTML = '<a data-x="abrir">Teve algum problema técnico?</a>'+
+      '<div class="hidden" data-x="caixa"><div style="margin-top:8px">Informe o código fornecido pelo professor.</div>'+
+      '<div class="row"><input type="text" maxlength="20" autocomplete="off" placeholder="Código"><button type="button">Confirmar</button></div>'+
+      '<div class="err"></div></div>';
+    el.classList.remove('hidden');
+    var caixa = el.querySelector('[data-x=caixa]'), inp = el.querySelector('input'), btn = el.querySelector('button'), err = el.querySelector('.err');
+    el.querySelector('[data-x=abrir]').onclick = function(){ caixa.classList.toggle('hidden'); inp.focus(); };
+    btn.onclick = function(){
+      var c = inp.value.replace(/\s+/g,'').toUpperCase();
+      if (!c) return err.textContent = 'Digite o código.';
+      btn.disabled = true; err.textContent = '';
+      validarCodigo(c).then(function(ok){
+        btn.disabled = false;
+        if (!ok) return err.textContent = 'Código inválido. Procure o professor.';
+        codigoLib = c; montarIdentificacao();
+      }).catch(function(e){ btn.disabled = false; err.textContent = 'Não foi possível verificar: ' + e; });
+    };
+  }
+  function validarCodigo(c){
+    if (window.MOCK) return Promise.resolve(window.MOCK.validarCodigo(c));
+    return fetch(API_URL + '?acao=codigo&cod=' + encodeURIComponent(c)).then(function(r){ return r.json(); }).then(function(d){ return !!d.ok; });
+  }
+  var KEY = 'quizOlho_prog', DONE = 'quizOlho_feito', idx = 0, deadline = 0, tick = null, enviando = false;
+  function salvarProg(){ try { localStorage.setItem(KEY, JSON.stringify({aluno:aluno, respostas:respostas, idx:idx, deadline:deadline, motivo:motivoSaida})); } catch(e){} }
+  var motivoSaida = '';
+
+  // ---------- Saída da página: finaliza a atividade ----------
+  function emAndamento(){ return quiz && !enviando && !$('tela-quiz').classList.contains('hidden') && idx < quiz.questoes.length; }
+  function saiuDaPagina(como){
+    if (!emAndamento() || motivoSaida) return;
+    motivoSaida = 'Finalizado por saída da página (' + como + ') na questão ' + (idx+1);
+    salvarProg();
+    enviar();
+  }
+  document.addEventListener('visibilitychange', function(){ if (document.hidden) saiuDaPagina('trocou de aba/aplicativo'); });
+  window.addEventListener('pagehide', function(){ saiuDaPagina('fechou ou recarregou'); });
+  window.addEventListener('blur', function(){
+    setTimeout(function(){ if (!document.hasFocus() && !document.hidden) saiuDaPagina('mudou de janela'); }, 1500);
+  });
+  function limparProg(){ try { localStorage.removeItem(KEY); } catch(e){} }
+
+  function iniciar(){ idx = 0; respostas = {}; deadline = 0; motivoSaida = ''; enviando = false; $('timer').classList.remove('hidden'); abrirQuiz(); }
+  function abrirQuiz(){
+    $('q-nome').textContent = aluno.nome; $('q-turma').textContent = aluno.turma;
+    show('tela-quiz'); mostrarQuestao();
+  }
+
+  function mostrarQuestao(){
+    clearInterval(tick);
+    var tot = quiz.questoes.length;
+    $('barra').style.width = (idx/tot*100)+'%';
+    if (idx >= tot) return enviar();
+    var q = quiz.questoes[idx];
+    $('questao').innerHTML = '<span class="tag">'+esc(q.tema)+'</span><div class="num">Questão '+(idx+1)+' de '+tot+'</div>'+
+      '<p class="en">'+esc(q.enunciado)+'</p>'+
+      q.alternativas.map(function(a, j){
+        var sel = respostas[q.id] === a.valor;
+        return '<label class="opt'+(sel?' sel':'')+'"><input type="radio" name="alt" value="'+a.valor+'"'+(sel?' checked':'')+'>'+
+               '<span class="l">'+LETRAS[j]+'</span><span>'+esc(a.texto)+'</span></label>';
+      }).join('');
+    $('btn-prox').textContent = idx === tot-1 ? 'Finalizar e enviar' : 'Próxima questão';
+    $('btn-prox').disabled = false;
+    if (!deadline) deadline = Date.now() + quiz.tempo*1000;
+    salvarProg();
+    atualizarTempo();
+    tick = setInterval(atualizarTempo, 200);
+    window.scrollTo(0,0);
+  }
+
+  $('questao').addEventListener('change', function(ev){
+    var inp = ev.target; if (inp.name !== 'alt') return;
+    respostas[quiz.questoes[idx].id] = Number(inp.value);
+    $('questao').querySelectorAll('.opt').forEach(function(l){ l.classList.toggle('sel', l.contains(inp)); });
+    salvarProg();
+  });
+
+  function atualizarTempo(){
+    var rest = Math.max(0, deadline - Date.now()), seg = Math.ceil(rest/1000);
+    $('t-num').textContent = seg + 's';
+    $('t-bar').style.width = (rest/(quiz.tempo*1000)*100) + '%';
+    $('timer').classList.toggle('warn', seg <= 10);
+    if (rest <= 0) avancar();
+  }
+
+  function avancar(){
+    clearInterval(tick);
+    idx++; deadline = 0; salvarProg();
+    mostrarQuestao();
+  }
+  $('btn-prox').onclick = function(){ if (idx < quiz.questoes.length) avancar(); else enviar(); };
+
+  function enviar(){
+    if (enviando) return; enviando = true;
+    clearInterval(tick);
+    $('barra').style.width = '100%';
+    $('timer').classList.add('hidden');
+    $('questao').innerHTML = '<p class="center" style="margin:8px 0">Enviando suas respostas…</p>';
+    $('btn-prox').disabled = true; $('btn-prox').textContent = 'Enviando…'; $('err-quiz').textContent = '';
+    server('enviarRespostas', { nome: aluno.nome, turma: aluno.turma, respostas: respostas, motivo: motivoSaida, envioId: aluno.envioId, tentativa: aluno.tentativa || 1, codigo: aluno.codigo || '' })
+      .then(function(r){ limparProg(); try { localStorage.setItem(DONE, JSON.stringify({nota:r.nota, max:r.notaMaxima, saiu:!!r.motivo, tentativas: aluno.tentativa || 1, turma: aluno.turma})); } catch(e){} mostrarResultado(r); })
+      .catch(function(e){
+        enviando = false;
+        $('questao').innerHTML = '<p class="center" style="margin:8px 0">Suas respostas estão guardadas neste aparelho.</p>';
+        $('btn-prox').disabled = false; $('btn-prox').textContent = 'Tentar enviar novamente';
+        $('err-quiz').textContent = 'Erro ao enviar: ' + e;
+      });
+  }
+
+  function fmt(n){ return Number(n).toFixed(2).replace('.', ','); }
+  function mostrarResultado(r){
+    $('r-quem').textContent = r.nome + ' · ' + r.turma;
+    $('r-aviso').classList.toggle('hidden', !r.motivo);
+    $('r-aviso').textContent = r.motivo ? 'Tentativa encerrada porque você saiu da página durante o quiz. As questões seguintes foram consideradas sem resposta.' : '';
+    $('r-nota').innerHTML = esc(fmt(r.nota)) + '<small> / ' + esc(fmt(r.notaMaxima)) + '</small>';
+    $('r-acertos').textContent = r.acertos + ' de ' + r.total + ' acertos';
+    montarLiberacao('r-lib', aluno.tentativa || 1);
+    show('tela-res');
+  }
+})();
+</script>
+</body>
+</html>
